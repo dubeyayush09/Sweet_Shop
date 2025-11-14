@@ -59,21 +59,31 @@ export const deleteSweet = async (req, res) => {
   }
 };
 
+const validateAmount = (amount) => {
+  return amount && Number(amount) > 0;
+};
+
+const findSweetOr404 = async (id, res) => {
+  const sweet = await Sweet.findById(id);
+  if (!sweet) {
+    res.status(404).json({ message: "Sweet not found" });
+    return null;
+  }
+  return sweet;
+};
+
 export const purchaseSweet = async (req, res) => {
   try {
     const { amount } = req.body;
 
-    if (!amount || amount <= 0) {
+    if (!validateAmount(amount)) {
       return res
         .status(400)
         .json({ message: "Amount must be greater than zero" });
     }
 
-    const sweet = await Sweet.findById(req.params.id);
-
-    if (!sweet) {
-      return res.status(404).json({ message: "Sweet not found" });
-    }
+    const sweet = await findSweetOr404(req.params.id, res);
+    if (!sweet) return;
 
     if (sweet.quantity < amount) {
       return res.status(400).json({ message: "Not enough quantity in stock" });
@@ -92,17 +102,14 @@ export const restockSweet = async (req, res) => {
   try {
     const { amount } = req.body;
 
-    if (!amount || amount <= 0) {
+    if (!validateAmount(amount)) {
       return res
         .status(400)
         .json({ message: "Amount must be greater than zero" });
     }
 
-    const sweet = await Sweet.findById(req.params.id);
-
-    if (!sweet) {
-      return res.status(404).json({ message: "Sweet not found" });
-    }
+    const sweet = await findSweetOr404(req.params.id, res);
+    if (!sweet) return;
 
     sweet.quantity += amount;
     await sweet.save();
@@ -112,4 +119,3 @@ export const restockSweet = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
