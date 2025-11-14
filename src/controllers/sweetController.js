@@ -58,3 +58,58 @@ export const deleteSweet = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+export const purchaseSweet = async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Amount must be greater than zero" });
+    }
+
+    const sweet = await Sweet.findById(req.params.id);
+
+    if (!sweet) {
+      return res.status(404).json({ message: "Sweet not found" });
+    }
+
+    if (sweet.quantity < amount) {
+      return res.status(400).json({ message: "Not enough quantity in stock" });
+    }
+
+    sweet.quantity -= amount;
+    await sweet.save();
+
+    return res.status(200).json({ data: sweet });
+  } catch (err) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const restockSweet = async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Amount must be greater than zero" });
+    }
+
+    const sweet = await Sweet.findById(req.params.id);
+
+    if (!sweet) {
+      return res.status(404).json({ message: "Sweet not found" });
+    }
+
+    sweet.quantity += amount;
+    await sweet.save();
+
+    return res.status(200).json({ data: sweet });
+  } catch (err) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
