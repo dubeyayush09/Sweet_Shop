@@ -17,12 +17,28 @@ afterAll(async () => {
 beforeEach(async () => {
   await Sweet.deleteMany({});
 
-  await Sweet.insertMany([
-    { name: "Gulab Jamun", category: "Indian", price: 20, quantity: 50 },
-    { name: "Rasgulla", category: "Bengali", price: 25, quantity: 40 },
-    { name: "Barfi", category: "Milk", price: 30, quantity: 60 },
-    { name: "Kaju Katli", category: "Dry Fruit", price: 50, quantity: 30 },
-  ]);
+ await Promise.all([
+   Sweet.create({
+     name: "Gulab Jamun",
+     category: "Indian",
+     price: 20,
+     quantity: 50,
+   }),
+   Sweet.create({
+     name: "Rasgulla",
+     category: "Bengali",
+     price: 25,
+     quantity: 40,
+   }),
+   Sweet.create({ name: "Barfi", category: "Milk", price: 30, quantity: 60 }),
+   Sweet.create({
+     name: "Kaju Katli",
+     category: "Dry Fruit",
+     price: 50,
+     quantity: 30,
+   }),
+ ]);
+
 });
 
 describe("Sweet Search API", () => {
