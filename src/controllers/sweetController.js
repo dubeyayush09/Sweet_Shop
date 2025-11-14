@@ -120,6 +120,27 @@ export const restockSweet = async (req, res) => {
   }
 };
 
+const buildSearchFilter = ({ name, category, minPrice, maxPrice }) => {
+  const filter = {};
+
+  if (name) {
+    filter.name = { $regex: name, $options: "i" };
+  }
+
+  if (category) {
+    filter.category = category;
+  }
+
+  if (minPrice || maxPrice) {
+    filter.price = {};
+    if (minPrice) filter.price.$gte = Number(minPrice);
+    if (maxPrice) filter.price.$lte = Number(maxPrice);
+  }
+
+  return filter;
+};
+
+
 export const searchSweets = async (req, res) => {
   try {
     const { name, category, minPrice, maxPrice } = req.query;
@@ -143,10 +164,10 @@ export const searchSweets = async (req, res) => {
       if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
 
-    console.log("DEBUG QUERY:", filter);
+    // console.log("DEBUG QUERY:", filter);
 
     const all = await Sweet.find();
-    console.log("DEBUG ALL SWEETS:", all);
+    // console.log("DEBUG ALL SWEETS:", all);
 
 
     return res.status(200).json({ data: sweets });
