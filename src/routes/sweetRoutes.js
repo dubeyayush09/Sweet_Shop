@@ -11,10 +11,10 @@ import { adminMiddleware } from "../middlewares/adminMiddleware.js";
 
 const router = express.Router();
 
-// Public route
+// Public
 router.get("/", getAllSweets);
 
-// Admin routes
+// Admin only
 router.post("/", authMiddleware, adminMiddleware, createSweet);
 router.put("/:id", authMiddleware, adminMiddleware, updateSweet);
 router.delete("/:id", authMiddleware, adminMiddleware, deleteSweet);
