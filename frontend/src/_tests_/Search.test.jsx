@@ -1,54 +1,88 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Dashboard from "../pages/Dashboard";
+import { vi } from "vitest";
 import axios from "axios";
 
 vi.mock("axios");
 
-describe("Search Feature (GREEN)", () => {
-  
-  test("renders search input", async () => {
-    // FIRST CALL → Dashboard initial load
-    axios.get.mockResolvedValueOnce({ data: { data: [] } });
+// Mock API responses
+beforeEach(() => {
+  axios.get.mockImplementation((url) => {
+    // Initial load of all sweets (Dashboard loadData)
+    if (url === "/api/sweets") {
+      return Promise.resolve({
+        data: {
+          data: [
+            {
+              _id: "1",
+              name: "Gulab Jamun",
+              category: "Indian",
+              price: 20,
+              quantity: 10,
+            },
+            {
+              _id: "2",
+              name: "Rasgulla",
+              category: "Bengali",
+              price: 25,
+              quantity: 15,
+            },
+          ],
+        },
+      });
+    }
 
+    // Search API
+    if (url.includes("/api/sweets/search?name=gulab")) {
+      return Promise.resolve({
+        data: {
+          data: [
+            {
+              _id: "1",
+              name: "Gulab Jamun",
+              category: "Indian",
+              price: 20,
+              quantity: 10,
+            },
+          ],
+        },
+      });
+    }
+
+    // Default fallback mock
+    return Promise.resolve({ data: { data: [] } });
+  });
+});
+
+// ----------------------
+// TEST CASES
+// ----------------------
+
+describe("Search Feature (GREEN)", () => {
+  test("renders search input", async () => {
     render(<Dashboard />);
 
-    expect(
-      screen.getByPlaceholderText("Search sweets...")
-    ).toBeDefined();
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Search sweets...")).toBeDefined();
+    });
   });
 
   test("search filters sweets", async () => {
-    // FIRST CALL → initial load
-    axios.get.mockResolvedValueOnce({
-      data: { data: [] }
-    });
-
     render(<Dashboard />);
+
+    // Wait for initial load to finish
+    await waitFor(() =>
+      expect(screen.getByPlaceholderText("Search sweets...")).toBeDefined()
+    );
 
     const input = screen.getByPlaceholderText("Search sweets...");
     fireEvent.change(input, { target: { value: "gulab" } });
 
-    // Setup the SECOND mock BEFORE clicking Search
-    axios.get.mockResolvedValueOnce({
-      data: {
-        data: [
-          { 
-            _id: "1",
-            name: "Gulab Jamun",
-            price: 20,
-            category: "Indian",
-            quantity: 5,
-          },
-        ],
-      },
-    });
+    const btn = screen.getByText("Search");
+    fireEvent.click(btn);
 
-    fireEvent.click(screen.getByText("Search"));
-
-    // Wait for UI update
     await waitFor(() => {
       expect(screen.getByText("Gulab Jamun")).toBeDefined();
     });
   });
-
 });
