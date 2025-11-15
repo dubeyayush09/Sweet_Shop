@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { getAllSweets } from "../services/sweetService";
+import { getAllSweets,searchSweets } from "../services/sweetService";
+// import { getAllSweets, searchSweets } from "../services/sweetService.js";
+
+
 
 export default function Dashboard() {
   const [sweets, setSweets] = useState([]);
@@ -23,15 +26,15 @@ export default function Dashboard() {
   };
 
   // SEARCH HANDLER
-  const handleSearch = async () => {
-    try {
-      const res = await axios.get(`/api/sweets/search?name=${query}`);
-      setSweets(res?.data?.data || []);
-    } catch (err) {
-      console.error("Search failed:", err);
-      setSweets([]);
-    }
-  };
+ const handleSearch = async () => {
+   try {
+     const res = await searchSweets(query);
+     setSweets(res.data.data);
+   } catch (err) {
+     console.error("Search failed:", err);
+   }
+ };
+
 
 
   return (
