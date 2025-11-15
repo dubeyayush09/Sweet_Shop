@@ -1,28 +1,32 @@
 // src/_tests_/EditSweet.test.jsx
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
-import EditSweet from "../pages/EditSweet";
-import axios from "axios";
+
 import { vi } from "vitest";
 
-// Mock axios
 vi.mock("axios", () => ({
   default: {
     get: vi.fn(() =>
       Promise.resolve({
         data: {
-          data: {
-            name: "Gulab Jamun",
-            category: "Indian",
-            price: 20,
-            quantity: 10,
-          },
+          name: "Gulab Jamun",
+          category: "Indian",
+          price: 20,
+          quantity: 10,
         },
       })
     ),
-    put: vi.fn(() => Promise.resolve({ data: { message: "Updated" } })),
+    put: vi.fn(() =>
+      Promise.resolve({
+        data: { message: "Sweet updated" },
+      })
+    ),
   },
 }));
+
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+import EditSweet from "../pages/EditSweet.jsx";
+import axios from "axios";
+
 
 describe("Edit Sweet (RED)", () => {
   test("renders edit sweet form with existing data", async () => {
