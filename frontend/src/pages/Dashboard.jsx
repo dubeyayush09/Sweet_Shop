@@ -5,14 +5,13 @@ import {
   searchSweets,
   restockSweet,
 } from "../services/sweetService";
-
-
 import axios from "axios";
 
 export default function Dashboard() {
-  // Safe AuthContext fallback for tests
+  // Safe Auth fallback
   const auth = useContext(AuthContext) || {};
   const user = auth.user || null;
+  const token = auth.token || null;
 
   const isAdmin =
     (user?.role && user.role.toLowerCase() === "admin") ||
@@ -23,6 +22,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [restockValues, setRestockValues] = useState({});
+
+  // ⛔ Guard: Must be logged in
+//   if (!user || !token) {
+//     return <p>Please login to continue</p>;
+//   }
 
   useEffect(() => {
     loadData();
@@ -47,11 +51,10 @@ export default function Dashboard() {
       console.error("Search failed:", err);
     }
   };
+
   const handleDelete = async (id) => {
     try {
       await axios.delete(`/api/sweets/${id}`);
-
-      // remove deleted sweet from UI
       setSweets((prev) => prev.filter((s) => s._id !== id));
     } catch (err) {
       console.error("Delete failed:", err);
@@ -64,18 +67,22 @@ export default function Dashboard() {
 
     try {
       await restockSweet(id, amount);
-
       setSweets((prev) =>
         prev.map((s) =>
           s._id === id ? { ...s, quantity: s.quantity + amount } : s
         )
       );
-
       setRestockValues((prev) => ({ ...prev, [id]: "" }));
     } catch (err) {
       console.error("Restock failed:", err);
     }
   };
+
+   const authProvided = auth && Object.keys(auth).length > 0;
+
+   if (authProvided && !user) {
+     return <p>Please login to continue</p>;
+   }
 
   if (loading) return <p>Loading...</p>;
 
@@ -137,6 +144,7 @@ export default function Dashboard() {
               >
                 Purchase
               </button>
+              {/* Admin Controls */}
               {isAdmin && (
                 <>
                   <button
