@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { AuthProvider, useAuth } from "../context/AuthContext";
-import { vi } from "vitest";
+import { act } from "react-dom/test-utils";
 
 function TestComponent() {
   const { user, token, login, logout } = useAuth();
@@ -35,7 +35,9 @@ test("login updates user and token", () => {
     </AuthProvider>
   );
 
-  screen.getByText("Test Login").click();
+  act(() => {
+    screen.getByText("Test Login").click();
+  });
 
   expect(screen.getByTestId("user").textContent).toBe("test@test.com");
   expect(screen.getByTestId("token").textContent).toBe("fake-jwt");
@@ -48,10 +50,10 @@ test("logout resets user and token", () => {
     </AuthProvider>
   );
 
-  // Login first
-  screen.getByText("Test Login").click();
-  // Logout
-  screen.getByText("Test Logout").click();
+  act(() => {
+    screen.getByText("Test Login").click();
+    screen.getByText("Test Logout").click();
+  });
 
   expect(screen.getByTestId("user").textContent).toBe("null");
   expect(screen.getByTestId("token").textContent).toBe("null");

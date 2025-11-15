@@ -1,40 +1,41 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { getAllSweets } from "../services/sweetService";
 
 export default function Dashboard() {
   const [sweets, setSweets] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSweets = async () => {
-      try {
-        const res = await axios.get("/api/sweets");
-        setSweets(res.data.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSweets();
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      const res = await getAllSweets();
+      setSweets(res.data.data);
+    } catch (err) {
+      console.error("Failed to fetch sweets:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) return <p>Loading...</p>;
 
   if (sweets.length === 0) return <p>No sweets available</p>;
 
   return (
-    <div>
-      <h2>Dashboard</h2>
-      <ul>
+    <main>
+      <h2 className="text-xl font-bold mb-4">Dashboard</h2>
+
+      <ul className="space-y-4">
         {sweets.map((sweet) => (
-          <li key={sweet._id}>
-            <strong>{sweet.name}</strong> - ₹{sweet.price} ({sweet.category})
-            <br />
-            Quantity: {sweet.quantity}
-            <br />
+          <li key={sweet._id} className="p-3 border rounded">
+            <strong className="text-lg">{sweet.name}</strong> - ₹{sweet.price}
+            <div>Category: {sweet.category}</div>
+            <div>Quantity: {sweet.quantity}</div>
             <button
+              className="mt-2 px-3 py-1 bg-blue-500 text-white rounded disabled:bg-gray-400"
               data-testid={`purchase-${sweet._id}`}
               disabled={sweet.quantity === 0}
             >
@@ -43,6 +44,6 @@ export default function Dashboard() {
           </li>
         ))}
       </ul>
-    </div>
+    </main>
   );
 }
