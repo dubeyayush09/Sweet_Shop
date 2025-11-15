@@ -1,9 +1,16 @@
 // src/_tests_/AddSweet.test.jsx
+import { vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import AddSweet from "../pages/AddSweet";
-import axios from "axios";
 
-vi.mock("axios");
+// 🟢 MOCK THE SERVICE (IMPORTANT)
+vi.mock("../services/sweetService.js", () => ({
+  createSweet: vi.fn(() =>
+    Promise.resolve({ data: { message: "Sweet added" } })
+  ),
+}));
+
+import { createSweet } from "../services/sweetService.js";
+import AddSweet from "../pages/AddSweet.jsx";
 
 describe("Add Sweet Form (RED)", () => {
   test("renders add sweet form", () => {
@@ -17,10 +24,6 @@ describe("Add Sweet Form (RED)", () => {
   });
 
   test("submits form and calls API", async () => {
-    axios.post.mockResolvedValue({
-      data: { message: "Sweet added" },
-    });
-
     render(<AddSweet />);
 
     fireEvent.change(screen.getByPlaceholderText("Enter sweet name"), {
@@ -36,10 +39,10 @@ describe("Add Sweet Form (RED)", () => {
       target: { value: "50" },
     });
 
-    fireEvent.click(screen.getByText("Add Sweet"));
+    fireEvent.click(screen.getByTestId("submit-btn"));
 
     await waitFor(() =>
-      expect(axios.post).toHaveBeenCalledWith("/api/sweets", {
+      expect(createSweet).toHaveBeenCalledWith({
         name: "Ladoo",
         category: "Indian",
         price: "30",
