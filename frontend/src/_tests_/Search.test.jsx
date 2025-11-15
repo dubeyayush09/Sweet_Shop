@@ -4,41 +4,35 @@ import axios from "axios";
 
 vi.mock("axios");
 
-describe("Search Feature (RED)", () => {
-  test("renders search input", () => {
+describe("Search Feature (GREEN)", () => {
+  
+  test("renders search input", async () => {
+    // FIRST CALL → Dashboard initial load
+    axios.get.mockResolvedValueOnce({ data: { data: [] } });
+
     render(<Dashboard />);
-    expect(screen.getByPlaceholderText("Search sweets...")).toBeDefined();
+
+    expect(
+      screen.getByPlaceholderText("Search sweets...")
+    ).toBeDefined();
   });
 
   test("search filters sweets", async () => {
+    // FIRST CALL → initial load
     axios.get.mockResolvedValueOnce({
-      data: {
-        data: [
-          {
-            _id: "1",
-            name: "Gulab Jamun",
-            price: 20,
-            category: "Indian",
-            quantity: 5,
-          },
-        ],
-      },
+      data: { data: [] }
     });
 
     render(<Dashboard />);
 
-    // type in the search box
     const input = screen.getByPlaceholderText("Search sweets...");
     fireEvent.change(input, { target: { value: "gulab" } });
 
-    // click search
-    fireEvent.click(screen.getByText("Search"));
-
-    // mock API return after search
+    // Setup the SECOND mock BEFORE clicking Search
     axios.get.mockResolvedValueOnce({
       data: {
         data: [
-          {
+          { 
             _id: "1",
             name: "Gulab Jamun",
             price: 20,
@@ -49,8 +43,12 @@ describe("Search Feature (RED)", () => {
       },
     });
 
+    fireEvent.click(screen.getByText("Search"));
+
+    // Wait for UI update
     await waitFor(() => {
       expect(screen.getByText("Gulab Jamun")).toBeDefined();
     });
   });
+
 });
