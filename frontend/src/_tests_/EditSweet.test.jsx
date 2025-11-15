@@ -74,8 +74,8 @@ describe("Edit Sweet (RED)", () => {
       expect(axios.put).toHaveBeenCalledWith("/api/sweets/123", {
         name: "Updated Jamun",
         category: "Indian",
-        price: "25",
-        quantity: "10",
+        price: 25,
+        quantity: 10,
       })
     );
   });

@@ -1,13 +1,13 @@
-// src/pages/EditSweet.jsx
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import { getSweetById, updateSweet } from "../services/sweetService";
 
 export default function EditSweet() {
   const { id } = useParams();
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [form, setForm] = useState({
     name: "",
     category: "",
@@ -16,25 +16,25 @@ export default function EditSweet() {
   });
 
   useEffect(() => {
-    const fetchSweet = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get(`/api/sweets/${id}`);
+        const res = await getSweetById(id);
 
         setForm({
           name: res.data.name,
           category: res.data.category,
-          price: res.data.price,
-          quantity: res.data.quantity,
+          price: String(res.data.price),
+          quantity: String(res.data.quantity),
         });
 
         setLoading(false);
       } catch (err) {
-        console.error("Failed to fetch sweet:", err);
+        setError("Failed to load sweet.");
         setLoading(false);
       }
     };
 
-    fetchSweet();
+    fetchData();
   }, [id]);
 
   const handleChange = (e) => {
@@ -44,65 +44,51 @@ export default function EditSweet() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await axios.put(`/api/sweets/${id}`, {
-      name: String(form.name),
-      category: String(form.category),
-      price: String(form.price),
-      quantity: String(form.quantity),
+    if (!form.name || !form.category || !form.price || !form.quantity) {
+      alert("All fields are required.");
+      return;
+    }
+
+    await updateSweet(id, {
+      ...form,
+      price: Number(form.price),
+      quantity: Number(form.quantity),
     });
-    alert("Sweet updated!");
+
+    alert("Sweet updated successfully!");
   };
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+
+  const fields = [
+    { name: "name", placeholder: "Enter sweet name" },
+    { name: "category", placeholder: "Enter category" },
+    { name: "price", placeholder: "Enter price", type: "number" },
+    { name: "quantity", placeholder: "Enter quantity", type: "number" },
+  ];
 
   return (
     <div>
       <h2 className="text-xl font-bold mb-4">Edit Sweet</h2>
 
       <form onSubmit={handleSubmit}>
-        <input
-          className="border p-2 block mb-2"
-          data-testid="name"
-          name="name"
-          placeholder="Enter sweet name"
-          value={form.name}
-          onChange={handleChange}
-        />
-
-        <input
-          className="border p-2 block mb-2"
-          data-testid="category"
-          name="category"
-          placeholder="Enter category"
-          value={form.category}
-          onChange={handleChange}
-        />
-
-        <input
-          className="border p-2 block mb-2"
-          data-testid="price"
-          name="price"
-          placeholder="Enter price"
-          type="number"
-          value={form.price}
-          onChange={handleChange}
-        />
-
-        <input
-          className="border p-2 block mb-2"
-          data-testid="quantity"
-          name="quantity"
-          placeholder="Enter quantity"
-          type="number"
-          value={form.quantity}
-          onChange={handleChange}
-        />
+        {fields.map((field) => (
+          <input
+            key={field.name}
+            data-testid={field.name}
+            className="border p-2 block mb-2"
+            name={field.name}
+            placeholder={field.placeholder}
+            type={field.type || "text"}
+            value={form[field.name]}
+            onChange={handleChange}
+          />
+        ))}
 
         <button
-          className="px-4 py-2 bg-blue-500 text-white rounded"
           data-testid="update-btn"
+          className="px-4 py-2 bg-blue-500 text-white rounded"
           type="submit"
         >
           Update Sweet

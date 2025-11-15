@@ -10,3 +10,6 @@ export const purchaseSweet = (id) => axios.post(`/api/sweets/${id}/purchase`);
 export const createSweet = async (sweet) => {
   return axios.post("/api/sweets", sweet);
 };
+
+export const getSweetById = (id) => axios.get(`/api/sweets/${id}`);
+export const updateSweet = (id, sweet) => axios.put(`/api/sweets/${id}`, sweet);
