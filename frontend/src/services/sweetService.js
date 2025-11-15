@@ -13,3 +13,5 @@ export const createSweet = async (sweet) => {
 
 export const getSweetById = (id) => axios.get(`/api/sweets/${id}`);
 export const updateSweet = (id, sweet) => axios.put(`/api/sweets/${id}`, sweet);
+export const restockSweet = (id, amount) =>
+  axios.post(`/api/sweets/${id}/restock`, { amount });

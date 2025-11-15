@@ -1,8 +1,13 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { getAllSweets, searchSweets } from "../services/sweetService";
-import axios from "axios";
+import {
+  getAllSweets,
+  searchSweets,
+  restockSweet,
+} from "../services/sweetService";
 
+
+import axios from "axios";
 
 export default function Dashboard() {
   // Safe AuthContext fallback for tests
@@ -17,6 +22,7 @@ export default function Dashboard() {
   const [sweets, setSweets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [restockValues, setRestockValues] = useState({});
 
   useEffect(() => {
     loadData();
@@ -52,6 +58,24 @@ export default function Dashboard() {
     }
   };
 
+  const handleRestock = async (id) => {
+    const amount = Number(restockValues[id] || 0);
+    if (!amount || amount <= 0) return;
+
+    try {
+      await restockSweet(id, amount);
+
+      setSweets((prev) =>
+        prev.map((s) =>
+          s._id === id ? { ...s, quantity: s.quantity + amount } : s
+        )
+      );
+
+      setRestockValues((prev) => ({ ...prev, [id]: "" }));
+    } catch (err) {
+      console.error("Restock failed:", err);
+    }
+  };
 
   if (loading) return <p>Loading...</p>;
 
@@ -114,13 +138,39 @@ export default function Dashboard() {
                 Purchase
               </button>
               {isAdmin && (
-                <button
-                  className="ml-3 px-3 py-1 bg-red-500 text-white rounded"
-                  data-testid={`delete-${sweet._id}`}
-                  onClick={() => handleDelete(sweet._id)}
-                >
-                  Delete
-                </button>
+                <>
+                  <button
+                    className="ml-3 px-3 py-1 bg-red-500 text-white rounded"
+                    data-testid={`delete-${sweet._id}`}
+                    onClick={() => handleDelete(sweet._id)}
+                  >
+                    Delete
+                  </button>
+
+                  <div className="mt-2 flex items-center">
+                    <input
+                      type="number"
+                      placeholder="Restock amount"
+                      className="border p-1 w-24"
+                      data-testid={`restock-input-${sweet._id}`}
+                      value={restockValues[sweet._id] || ""}
+                      onChange={(e) =>
+                        setRestockValues((prev) => ({
+                          ...prev,
+                          [sweet._id]: e.target.value,
+                        }))
+                      }
+                    />
+
+                    <button
+                      className="ml-2 px-2 py-1 bg-green-600 text-white rounded"
+                      data-testid={`restock-btn-${sweet._id}`}
+                      onClick={() => handleRestock(sweet._id)}
+                    >
+                      Restock
+                    </button>
+                  </div>
+                </>
               )}
             </li>
           ))}
